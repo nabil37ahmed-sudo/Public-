@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>FaceStyle AI</title>
+<meta name="description" content="Find the style that fits your face." />
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+
+<div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+<!-- ============================= HOME ============================= -->
+<section id="screen-home" class="screen active">
+  <div class="home-hero">
+    <div class="brand">
+      <span class="brand-mark">FS</span>
+      <span class="brand-name">FaceStyle AI</span>
+    </div>
+    <h1>Find the style that fits your face.</h1>
+    <p class="subtitle">Upload a selfie and get personalized hairstyle, beard and grooming recommendations.</p>
+    <button class="btn btn-primary btn-large" id="btn-analyze-cta">Analyze My Face</button>
+
+    <div id="not-configured-banner" class="info-banner hidden">
+      AI analysis isn't connected yet. Add your AI API key to enable live analysis. The rest of the app still works so you can explore it.
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">◎</div>
+        <div class="feature-title">AI Face Analysis</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✂</div>
+        <div class="feature-title">Hairstyle Recommendations</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">▢</div>
+        <div class="feature-title">Beard Recommendations</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✦</div>
+        <div class="feature-title">Grooming Guide</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= UPLOAD ============================= -->
+<section id="screen-upload" class="screen">
+  <header class="screen-header">
+    <button class="btn-icon" data-nav="home" aria-label="Back">←</button>
+    <h2>Upload a selfie</h2>
+  </header>
+
+  <div class="screen-body">
+    <ul class="requirements-list">
+      <li>One face should be visible</li>
+      <li>Front-facing or slightly angled photos work best</li>
+      <li>Good, even lighting</li>
+      <li>Avoid sunglasses or anything covering major facial features</li>
+    </ul>
+
+    <div id="dropzone" class="dropzone">
+      <div id="dropzone-empty" class="dropzone-empty">
+        <div class="dropzone-icon">📷</div>
+        <p>Drag &amp; drop a photo here</p>
+        <div class="upload-actions">
+          <label class="btn btn-secondary" for="file-camera">Take Photo</label>
+          <input type="file" id="file-camera" accept="image/*" capture="user" hidden />
+          <label class="btn btn-secondary" for="file-gallery">Choose from Gallery</label>
+          <input type="file" id="file-gallery" accept="image/jpeg,image/png,image/webp" hidden />
+        </div>
+      </div>
+      <img id="preview-image" class="preview-image hidden" alt="Selfie preview" />
+    </div>
+
+    <p class="privacy-note">Your photo is used to provide the requested analysis and preview. Don't upload photos of other people without their permission.</p>
+
+    <div id="upload-error" class="error-banner hidden"></div>
+
+    <div id="upload-buttons" class="button-row hidden">
+      <button class="btn btn-secondary" id="btn-choose-another">Choose Another Photo</button>
+      <button class="btn btn-primary" id="btn-analyze-photo">Analyze Photo</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= ANALYZING (loading) ============================= -->
+<section id="screen-analyzing" class="screen">
+  <div class="loading-wrap">
+    <div class="spinner"></div>
+    <p>Analyzing your photo…</p>
+    <p class="loading-sub">This uses your uploaded photo only — nothing is saved on our servers.</p>
+  </div>
+</section>
+
+<!-- ============================= RESULTS ============================= -->
+<section id="screen-results" class="screen">
+  <header class="screen-header">
+    <button class="btn-icon" data-nav="home" aria-label="Back">←</button>
+    <h2>Your Face Analysis</h2>
+  </header>
+
+  <div class="screen-body" id="results-body">
+    <div id="results-empty" class="empty-state hidden">
+      <p>No analysis yet.</p>
+      <button class="btn btn-primary" data-nav="upload">Analyze My Face</button>
+    </div>
+
+    <div id="results-content" class="hidden">
+      <div class="result-summary-card">
+        <div class="result-summary-row">
+          <span class="label">Face Shape</span>
+          <span id="summary-face-shape" class="value">—</span>
+        </div>
+        <div class="result-summary-row">
+          <span class="label">Confidence</span>
+          <span id="summary-confidence" class="value confidence-badge">—</span>
+        </div>
+        <p class="estimate-disclaimer">These are AI-generated visual estimates from a photo, not medical or scientific measurements.</p>
+      </div>
+
+      <div class="card">
+        <h3>Face Shape</h3>
+        <p id="card-face-shape-reasoning">—</p>
+      </div>
+      <div class="card">
+        <h3>Current Hairstyle</h3>
+        <p id="card-current-hairstyle">—</p>
+      </div>
+      <div class="card">
+        <h3>Beard</h3>
+        <p id="card-beard-status">—</p>
+      </div>
+      <div class="card">
+        <h3>Jawline</h3>
+        <p id="card-jawline">—</p>
+      </div>
+
+      <h3 class="section-title">Hairstyle Recommendations</h3>
+      <div id="hairstyle-list" class="rec-list"></div>
+
+      <h3 class="section-title">Beard Recommendations</h3>
+      <div id="beard-list" class="rec-list"></div>
+
+      <h3 class="section-title">Grooming Guide</h3>
+      <div class="card grooming-card">
+        <h4>Hair</h4>
+        <ul id="grooming-hair"></ul>
+      </div>
+      <div class="card grooming-card">
+        <h4>Beard</h4>
+        <ul id="grooming-beard"></ul>
+      </div>
+      <div class="card grooming-card">
+        <h4>Skin</h4>
+        <ul id="grooming-skin"></ul>
+        <p class="note" id="grooming-skin-note"></p>
+      </div>
+      <div class="card grooming-card">
+        <h4>Jawline / Appearance</h4>
+        <ul id="grooming-appearance"></ul>
+        <p class="note" id="grooming-appearance-note"></p>
+      </div>
+
+      <button class="btn btn-danger btn-block" id="btn-delete-photo">Delete My Photo</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= EXPLORE STYLES ============================= -->
+<section id="screen-styles" class="screen">
+  <header class="screen-header">
+    <button class="btn-icon" data-nav="home" aria-label="Back">←</button>
+    <h2>Explore Styles</h2>
+  </header>
+  <div class="screen-body">
+    <h3 class="section-title">Hair</h3>
+    <div id="library-hair" class="rec-list"></div>
+    <h3 class="section-title">Beard</h3>
+    <div id="library-beard" class="rec-list"></div>
+  </div>
+</section>
+
+<!-- ============================= PREVIEW MODAL ============================= -->
+<div id="preview-modal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-content">
+    <button class="btn-icon modal-close" id="btn-close-modal" aria-label="Close">✕</button>
+    <h3 id="modal-title">Style Preview</h3>
+    <div id="modal-body">
+      <div id="modal-loading" class="loading-wrap hidden">
+        <div class="spinner"></div>
+        <p>Generating preview…</p>
+      </div>
+      <div id="modal-unavailable" class="info-banner hidden"></div>
+      <div id="modal-compare" class="compare-wrap hidden">
+        <div class="compare-slider" id="compare-slider">
+          <img id="compare-after" alt="New style" />
+          <div class="compare-before-clip" id="compare-before-clip">
+            <img id="compare-before" alt="Original photo" />
+          </div>
+          <input type="range" id="compare-range" min="0" max="100" value="50" />
+        </div>
+        <div class="compare-labels"><span>Original</span><span>New Style</span></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="btn-try-another">Try Another Style</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= BOTTOM NAV ============================= -->
+<nav class="bottom-nav">
+  <button class="nav-item active" data-nav="home">
+    <span class="nav-icon">⌂</span><span>Home</span>
+  </button>
+  <button class="nav-item" data-nav="upload">
+    <span class="nav-icon">＋</span><span>Analyze</span>
+  </button>
+  <button class="nav-item" data-nav="styles">
+    <span class="nav-icon">▤</span><span>Styles</span>
+  </button>
+  <button class="nav-item" data-nav="results">
+    <span class="nav-icon">◍</span><span>My Results</span>
+  </button>
+</nav>
+
+<script src="/app.js"></script>
+</body>
+</html>
